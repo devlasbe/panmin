@@ -7,6 +7,21 @@ const env = {
   OPENAI_API_KEY: process.env.NEXT_PUBLIC_OPENAI_API_KEY,
   VERIFICATION_GOOGLE: process.env.VERIFICATION_GOOGLE,
   VERIFICATION_NAVER: process.env.VERIFICATION_NAVER,
+  FIREBASE_API_KEY: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  FIREBASE_PROJECT_ID: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  FIREBASE_MESSAGING_ID: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_ID,
+  FIREBASE_APP_ID: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+  FIREBASE_MEASUREMENT_ID: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
+};
+
+const firebaseConfig = {
+  apiKey: env.FIREBASE_API_KEY,
+  authDomain: `${env.FIREBASE_PROJECT_ID}.firebaseapp.com`,
+  projectId: env.FIREBASE_PROJECT_ID,
+  storageBucket: `${env.FIREBASE_PROJECT_ID}.firebasestorage.app`,
+  messagingSenderId: env.FIREBASE_MESSAGING_ID,
+  appId: env.FIREBASE_APP_ID,
+  measurementId: env.FIREBASE_MEASUREMENT_ID,
 };
 
 const profile = {
@@ -46,6 +61,7 @@ const constants = {
   env,
   metaData,
   profile,
+  firebaseConfig,
 };
 
 export default constants;
