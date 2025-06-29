@@ -32,9 +32,9 @@ const metaData = {
     },
   },
   verification: {
-    google: env.VERIFICATION_GOOGLE,
+    google: env.VERIFICATION_GOOGLE || "",
     other: {
-      "naver-site-verification": env.VERIFICATION_NAVER,
+      "naver-site-verification": env.VERIFICATION_NAVER || "",
     },
   },
 };
