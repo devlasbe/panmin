@@ -80,9 +80,29 @@ const useFirebase = () => {
     }
   };
 
+  const getHistoryCount = async () => {
+    try {
+      const historyRef = doc(db, "panmin", "history");
+      const historyDoc = await getDoc(historyRef);
+
+      if (historyDoc.exists()) {
+        const data = historyDoc.data();
+        const fieldCount = Object.keys(data).filter((key) => key !== "lastUpdated").length;
+
+        return { success: true, count: fieldCount };
+      } else {
+        return { success: true, count: 0 };
+      }
+    } catch (error) {
+      console.error("Error getting history count:", error);
+      return { success: false, error };
+    }
+  };
+
   return {
     saveHistory,
     getHistory,
+    getHistoryCount,
     analytics,
   };
 };
