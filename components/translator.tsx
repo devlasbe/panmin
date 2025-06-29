@@ -79,7 +79,7 @@ const Translator = () => {
           </div>
           <div className="p-4 md:p-0 border-t border-b md:border-b-0">
             <button
-              className={`w-full h-full p-4 border rounded-full md:rounded-none border-blue-600 bg-blue-500 text-white ${
+              className={`w-full h-full p-4 border rounded-full md:rounded-none border-blue-600 bg-blue-500 text-white active:opacity-50 ${
                 isLoading ? "opacity-50" : ""
               }`}
               disabled={isLoading}
@@ -100,7 +100,7 @@ const Translator = () => {
 
           <div className="p-4 md:p-0 border-t ">
             <button
-              className="w-full h-full p-4 border rounded-full md:rounded-none border-green-600 bg-green-500 text-white"
+              className="w-full h-full p-4 border rounded-full md:rounded-none border-green-600 bg-green-500 text-white active:opacity-50"
               type="button"
               onClick={handleClickCopy}
             >
