@@ -2,7 +2,7 @@
 
 import useGpt from "@/hooks/useGpt";
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Loader } from "@lasbe/loader";
 
 const LANGUAGE: Record<string, "한국어" | "판교 사투리"> = {
@@ -27,6 +27,19 @@ const Translator = () => {
     text: "",
     result: "",
   });
+  const [cooldown, setCooldown] = useState(0);
+
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (cooldown > 0) {
+      timer = setTimeout(() => {
+        setCooldown(cooldown - 1);
+      }, 1000);
+    }
+    return () => {
+      if (timer) clearTimeout(timer);
+    };
+  }, [cooldown]);
 
   const handleChangeLanguage = () => {
     setTranslate((prev) => ({
@@ -52,11 +65,22 @@ const Translator = () => {
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!translate.text) return;
+    if (!translate.text || cooldown > 0) return;
     getGptResponse({ mode: translate.from === LANGUAGE.ko ? "A" : "B", text: translate.text }).then((response) => {
-      if (response) setTranslate((prev) => ({ ...prev, result: response }));
+      if (response) {
+        setTranslate((prev) => ({ ...prev, result: response }));
+        setCooldown(5); // 5초 쿨다운 시작
+      }
     });
   };
+
+  const getButtonText = () => {
+    if (isLoading) return "번역 중...";
+    if (cooldown > 0) return `번역 얼라인하기 (${cooldown}s)`;
+    return "번역 얼라인하기";
+  };
+
+  const isButtonDisabled = isLoading || cooldown > 0;
 
   return (
     <form className="flex flex-1 flex-col border rounded-md overflow-hidden" onSubmit={handleSubmit}>
@@ -80,12 +104,12 @@ const Translator = () => {
           <div className="p-4 md:p-0 border-t border-b md:border-b-0">
             <button
               className={`w-full h-full p-4 border rounded-full md:rounded-none border-blue-600 bg-blue-500 text-white active:opacity-50 ${
-                isLoading ? "opacity-50" : ""
+                isButtonDisabled ? "opacity-50" : ""
               }`}
-              disabled={isLoading}
+              disabled={isButtonDisabled}
               type="submit"
             >
-              {isLoading ? <Loader isLoading={isLoading} size="lg" color="#fff" /> : "번역 얼라인하기"}
+              {isLoading ? <Loader isLoading={isLoading} size="lg" color="#fff" /> : getButtonText()}
             </button>
           </div>
         </div>
