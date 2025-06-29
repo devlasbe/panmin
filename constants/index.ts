@@ -5,6 +5,8 @@ const description = "판교 사투리 번역기 판민정음과 함께라면 스
 const env = {
   GPT_PROMPT: process.env.NEXT_PUBLIC_GPT_PROMPT,
   OPENAI_API_KEY: process.env.NEXT_PUBLIC_OPENAI_API_KEY,
+  VERIFICATION_GOOGLE: process.env.VERIFICATION_GOOGLE,
+  VERIFICATION_NAVER: process.env.VERIFICATION_NAVER,
 };
 
 const profile = {
@@ -30,9 +32,9 @@ const metaData = {
     },
   },
   verification: {
-    google: "",
+    google: env.VERIFICATION_GOOGLE,
     other: {
-      "naver-site-verification": "",
+      "naver-site-verification": env.VERIFICATION_NAVER,
     },
   },
 };
