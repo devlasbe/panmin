@@ -152,37 +152,9 @@ const useFirebase = () => {
     }
   };
 
-  const getHistoryCount = async (days: number = 7) => {
-    try {
-      let totalCount = 0;
-      const today = new Date();
-
-      // 최근 N일간의 데이터 개수 조회
-      for (let i = 0; i < days; i++) {
-        const targetDate = new Date(today);
-        targetDate.setDate(today.getDate() - i);
-        const dateString = getDateString(targetDate);
-
-        const dailyHistoryRef = doc(db, "panmin", `history_${dateString}`);
-        const dailyHistoryDoc = await getDoc(dailyHistoryRef);
-
-        if (dailyHistoryDoc.exists()) {
-          const data = dailyHistoryDoc.data() as DailyHistoryData;
-          totalCount += data.items.length;
-        }
-      }
-
-      return { success: true, count: totalCount };
-    } catch (error) {
-      console.error("Error getting history count:", error);
-      return { success: false, error };
-    }
-  };
-
   return {
     saveHistory,
     getHistory,
-    getHistoryCount,
     getTotalCount,
     analytics,
   };
