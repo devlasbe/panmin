@@ -93,7 +93,7 @@ const Translator = () => {
   const isButtonDisabled = isLoading || cooldown > 0;
 
   return (
-    <form className="flex flex-1 flex-col border rounded-md overflow-hidden" onSubmit={handleSubmit}>
+    <form className="flex flex-1 flex-col border rounded-md" onSubmit={handleSubmit}>
       <div className="flex items-center p-4 border-b">
         <p className="flex-1">{translate.from}</p>
         <button className="active:opacity-50 cursor-pointer" type="button" onClick={handleChangeLanguage}>
@@ -123,13 +123,13 @@ const Translator = () => {
             </button>
           </div>
         </div>
-        <div className="flex flex-1 flex-col">
+        <div className="flex flex-1 flex-col overflow-y-hidden">
           {isLoading ? (
             <div className={`flex flex-1 justify-center items-center p-4`}>
               <Loader isLoading={isLoading} size="lg" />
             </div>
           ) : (
-            <div className={`flex-1 p-4`}>
+            <div className={`flex-1 p-4 overflow-y-scroll`}>
               <p>{translate.result || description[translate.to]}</p>
             </div>
           )}
