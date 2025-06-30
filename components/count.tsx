@@ -5,15 +5,15 @@ import { useEffect, useState } from "react";
 
 const Count = () => {
   const [count, setCount] = useState(0);
-  const { getHistoryCount } = useFirebase();
+  const { getTotalCount } = useFirebase();
 
   useEffect(() => {
-    getHistoryCount().then((res) => {
+    getTotalCount().then((res) => {
       if (res.success) {
         setCount(res.count || 0);
       }
     });
-  }, []);
+  }, [getTotalCount]);
 
   return (
     <div className="flex justify-center items-center py-2">

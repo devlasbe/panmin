@@ -1,6 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
-import { getFirestore, doc, setDoc, getDoc, updateDoc } from "firebase/firestore";
+import { getFirestore, doc, setDoc, getDoc } from "firebase/firestore";
 import constants from "@/constants";
 
 const app = initializeApp(constants.firebaseConfig);
@@ -19,32 +19,101 @@ interface HistoryData {
   timestamp: Date;
 }
 
+interface DailyHistoryData {
+  date: string; // YYYY-MM-DD 형식
+  items: HistoryData[];
+  lastUpdated: Date;
+}
+
+interface TotalCountData {
+  totalCount: number;
+  lastUpdated: Date;
+}
+
 const useFirebase = () => {
+  const getDateString = (date: Date) => {
+    return date.toISOString().split("T")[0]; // YYYY-MM-DD 형식
+  };
+
+  const incrementTotalCount = async () => {
+    try {
+      const totalCountRef = doc(db, "panmin", "totalCount");
+      const totalCountDoc = await getDoc(totalCountRef);
+
+      if (totalCountDoc.exists()) {
+        // 기존 카운트가 있으면 +1
+        const currentData = totalCountDoc.data() as TotalCountData;
+        await setDoc(totalCountRef, {
+          totalCount: currentData.totalCount + 1,
+          lastUpdated: new Date(),
+        });
+        return currentData.totalCount + 1;
+      } else {
+        // 처음이면 1로 시작
+        await setDoc(totalCountRef, {
+          totalCount: 1,
+          lastUpdated: new Date(),
+        });
+        return 1;
+      }
+    } catch (error) {
+      console.error("Error incrementing total count:", error);
+      return 0;
+    }
+  };
+
+  const getTotalCount = async () => {
+    try {
+      const totalCountRef = doc(db, "panmin", "totalCount");
+      const totalCountDoc = await getDoc(totalCountRef);
+
+      if (totalCountDoc.exists()) {
+        const data = totalCountDoc.data() as TotalCountData;
+        return { success: true, count: data.totalCount };
+      } else {
+        return { success: true, count: 0 };
+      }
+    } catch (error) {
+      console.error("Error getting total count:", error);
+      return { success: false, error };
+    }
+  };
+
   const saveHistory = async (data: Omit<HistoryData, "id" | "timestamp">) => {
     try {
       const timestamp = new Date();
-      const fieldId = timestamp.getTime().toString();
+      const dateString = getDateString(timestamp);
 
       const newHistoryItem: HistoryData = {
-        id: fieldId,
+        id: timestamp.getTime().toString(), // 간단한 ID 생성
         ...data,
         timestamp,
       };
 
-      const historyRef = doc(db, "panmin", "history");
-      const historyDoc = await getDoc(historyRef);
+      const dailyHistoryRef = doc(db, "panmin", `history_${dateString}`);
+      const dailyHistoryDoc = await getDoc(dailyHistoryRef);
 
-      if (historyDoc.exists()) {
-        await updateDoc(historyRef, {
-          [fieldId]: newHistoryItem,
+      if (dailyHistoryDoc.exists()) {
+        // 기존 날짜 문서가 있으면 아이템 추가
+        const existingData = dailyHistoryDoc.data() as DailyHistoryData;
+        const updatedItems = [...existingData.items, newHistoryItem];
+
+        await setDoc(dailyHistoryRef, {
+          date: dateString,
+          items: updatedItems,
           lastUpdated: timestamp,
         });
       } else {
-        await setDoc(historyRef, {
-          [fieldId]: newHistoryItem,
+        // 새로운 날짜 문서 생성
+        await setDoc(dailyHistoryRef, {
+          date: dateString,
+          items: [newHistoryItem],
           lastUpdated: timestamp,
         });
       }
+
+      // 총 번역 횟수 +1
+      await incrementTotalCount();
 
       return { success: true, data: newHistoryItem };
     } catch (error) {
@@ -53,46 +122,57 @@ const useFirebase = () => {
     }
   };
 
-  const getHistory = async () => {
+  const getHistory = async (days: number = 7) => {
     try {
-      const historyRef = doc(db, "panmin", "history");
-      const historyDoc = await getDoc(historyRef);
+      const historyData: HistoryData[] = [];
+      const today = new Date();
 
-      if (historyDoc.exists()) {
-        const data = historyDoc.data();
-        const historyData: HistoryData[] = [];
+      // 최근 N일간의 데이터 조회
+      for (let i = 0; i < days; i++) {
+        const targetDate = new Date(today);
+        targetDate.setDate(today.getDate() - i);
+        const dateString = getDateString(targetDate);
 
-        Object.keys(data).forEach((key) => {
-          if (key !== "lastUpdated" && typeof data[key] === "object") {
-            historyData.push(data[key] as HistoryData);
-          }
-        });
+        const dailyHistoryRef = doc(db, "panmin", `history_${dateString}`);
+        const dailyHistoryDoc = await getDoc(dailyHistoryRef);
 
-        historyData.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
-
-        return { success: true, data: historyData };
-      } else {
-        return { success: true, data: [] };
+        if (dailyHistoryDoc.exists()) {
+          const data = dailyHistoryDoc.data() as DailyHistoryData;
+          historyData.push(...data.items);
+        }
       }
+
+      // 최신순으로 정렬
+      historyData.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+
+      return { success: true, data: historyData };
     } catch (error) {
       console.error("Error getting history:", error);
       return { success: false, error };
     }
   };
 
-  const getHistoryCount = async () => {
+  const getHistoryCount = async (days: number = 7) => {
     try {
-      const historyRef = doc(db, "panmin", "history");
-      const historyDoc = await getDoc(historyRef);
+      let totalCount = 0;
+      const today = new Date();
 
-      if (historyDoc.exists()) {
-        const data = historyDoc.data();
-        const fieldCount = Object.keys(data).filter((key) => key !== "lastUpdated").length;
+      // 최근 N일간의 데이터 개수 조회
+      for (let i = 0; i < days; i++) {
+        const targetDate = new Date(today);
+        targetDate.setDate(today.getDate() - i);
+        const dateString = getDateString(targetDate);
 
-        return { success: true, count: fieldCount };
-      } else {
-        return { success: true, count: 0 };
+        const dailyHistoryRef = doc(db, "panmin", `history_${dateString}`);
+        const dailyHistoryDoc = await getDoc(dailyHistoryRef);
+
+        if (dailyHistoryDoc.exists()) {
+          const data = dailyHistoryDoc.data() as DailyHistoryData;
+          totalCount += data.items.length;
+        }
       }
+
+      return { success: true, count: totalCount };
     } catch (error) {
       console.error("Error getting history count:", error);
       return { success: false, error };
@@ -103,6 +183,7 @@ const useFirebase = () => {
     saveHistory,
     getHistory,
     getHistoryCount,
+    getTotalCount,
     analytics,
   };
 };
