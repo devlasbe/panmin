@@ -93,59 +93,61 @@ const Translator = () => {
   const isButtonDisabled = isLoading || cooldown > 0;
 
   return (
-    <form className="flex flex-1 flex-col border rounded-md" onSubmit={handleSubmit}>
-      <div className="flex items-center p-4 border-b">
-        <p className="flex-1">{translate.from}</p>
-        <button className="active:opacity-50 cursor-pointer" type="button" onClick={handleChangeLanguage}>
-          <Image src="/path.svg" alt="path" width={24} height={24} />
-        </button>
-        <p className="flex-1 text-right ">{translate.to}</p>
-      </div>
-      <div className="flex flex-1 flex-col md:flex-row">
-        <div className="flex flex-1 flex-col">
-          <div className="flex flex-1 p-4 md:border-r">
-            <textarea
-              className="flex-1 w-full resize-none focus-visible:outline-none"
-              value={translate.text}
-              onChange={handleChangeText}
-              placeholder={description[translate.from]}
-            />
-          </div>
-          <div className="p-4 md:p-0 border-t border-b md:border-b-0">
-            <button
-              className={`w-full h-full p-4 border rounded-full md:rounded-none border-blue-600 bg-blue-500 text-white active:opacity-50 ${
-                isButtonDisabled ? "opacity-50" : ""
-              }`}
-              disabled={isButtonDisabled}
-              type="submit"
-            >
-              {isLoading ? <Loader isLoading={isLoading} size="lg" color="#fff" /> : getButtonText()}
-            </button>
-          </div>
+    <div className="flex flex-1">
+      <form className="flex flex-1 flex-col border rounded-md" onSubmit={handleSubmit}>
+        <div className="flex items-center p-4 border-b">
+          <p className="flex-1">{translate.from}</p>
+          <button className="active:opacity-50 cursor-pointer" type="button" onClick={handleChangeLanguage}>
+            <Image src="/path.svg" alt="path" width={24} height={24} />
+          </button>
+          <p className="flex-1 text-right ">{translate.to}</p>
         </div>
-        <div className="flex flex-1 flex-col overflow-y-hidden">
-          {isLoading ? (
-            <div className={`flex flex-1 justify-center items-center p-4`}>
-              <Loader isLoading={isLoading} size="lg" />
+        <div className="flex flex-1 flex-col md:flex-row">
+          <div className="flex flex-1 flex-col">
+            <div className="flex flex-1 p-4 md:border-r">
+              <textarea
+                className="flex-1 w-full resize-none focus-visible:outline-none"
+                value={translate.text}
+                onChange={handleChangeText}
+                placeholder={description[translate.from]}
+              />
             </div>
-          ) : (
-            <div className={`flex-1 p-4 overflow-y-scroll`}>
-              <p>{translate.result || description[translate.to]}</p>
+            <div className="p-4 md:p-0 border-t border-b md:border-b-0">
+              <button
+                className={`w-full h-full p-4 border rounded-full md:rounded-none border-blue-600 bg-blue-500 text-white active:opacity-50 ${
+                  isButtonDisabled ? "opacity-50" : ""
+                }`}
+                disabled={isButtonDisabled}
+                type="submit"
+              >
+                {isLoading ? <Loader isLoading={isLoading} size="lg" color="#fff" /> : getButtonText()}
+              </button>
             </div>
-          )}
+          </div>
+          <div className="flex flex-1 flex-col overflow-y-hidden">
+            {isLoading ? (
+              <div className={`flex flex-1 justify-center items-center p-4`}>
+                <Loader isLoading={isLoading} size="lg" />
+              </div>
+            ) : (
+              <div className={`flex-1 p-4 overflow-y-scroll`}>
+                <p>{translate.result || description[translate.to]}</p>
+              </div>
+            )}
 
-          <div className="p-4 md:p-0 border-t ">
-            <button
-              className="w-full h-full p-4 border rounded-full md:rounded-none border-green-600 bg-green-500 text-white active:opacity-50"
-              type="button"
-              onClick={handleClickCopy}
-            >
-              복사하기
-            </button>
+            <div className="p-4 md:p-0 border-t ">
+              <button
+                className="w-full h-full p-4 border rounded-full md:rounded-none border-green-600 bg-green-500 text-white active:opacity-50"
+                type="button"
+                onClick={handleClickCopy}
+              >
+                복사하기
+              </button>
+            </div>
           </div>
         </div>
-      </div>
-    </form>
+      </form>
+    </div>
   );
 };
 
